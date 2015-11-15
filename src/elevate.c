@@ -2,6 +2,10 @@
 #include <stdio.h>
 #include <windows.h>
 
+#ifndef SEE_MASK_NOASYNC
+#define SEE_MASK_NOASYNC 0x00000100
+#endif
+
 // cf. https://www.msigeek.com/442/windows-os-version-numbers - Vista is 6.0
 #define VISTA_MAJOR_VERSION 6
 

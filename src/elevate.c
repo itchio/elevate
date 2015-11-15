@@ -45,13 +45,17 @@ int main(int argc, char** argv) {
 
   const int MAX_ARGUMENTS_LENGTH = 65536;
   char parameters[MAX_ARGUMENTS_LENGTH];
+  char tmp[MAX_ARGUMENTS_LENGTH];
+
   parameters[0] = '\0';
 
   for (int i = 2; i < argc; i++) {
-    int written = snprintf(parameters, MAX_ARGUMENTS_LENGTH, "%s%s ", parameters, argv[i]);
+    int written = snprintf(tmp, MAX_ARGUMENTS_LENGTH, "%s%s ", parameters, argv[i]);
     if (written < 0 || written >= MAX_ARGUMENTS_LENGTH) {
       bail(1, "argument string too long");
     }
+
+    strncpy(parameters, tmp, MAX_ARGUMENTS_LENGTH);
   }
 
   fprintf(stderr, "[elevate] %s %s\n", argv[1], parameters);

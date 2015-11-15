@@ -1,5 +1,5 @@
 
-language: cpp
+language: c
 
 env:
   global:
@@ -39,7 +39,7 @@ matrix:
              name: "itchio/elevate"
              description: "Build submitted via Travis CI"
            notification_email: fasterthanlime@gmail.com
-           build_command_prepend: ""           
+           build_command_prepend: ""
            build_command: "make"
            branch_pattern: coverity_scan
 script:

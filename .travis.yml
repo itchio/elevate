@@ -38,6 +38,7 @@ matrix:
 script:
   - if [[ -n $TRAVIS_TAG ]]; then export ELEVATE_CFLAGS="-DELEVATE_VERSION=\\\"$TRAVIS_TAG\\\""; fi
   - make
+  - file elevate.exe || true
 before_deploy:
   - mkdir -p build
   - cp elevate.exe build/

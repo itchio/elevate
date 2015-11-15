@@ -1,3 +1,8 @@
+
+[![Build Status](https://travis-ci.org/itchio/elevate.svg)](https://travis-ci.org/itchio/elevate)
+[![Coverity Scan Build Status](https://scan.coverity.com/projects/7034/badge.svg)](https://scan.coverity.com/projects/itchio-elevate)
+
+
 # elevate
 
 Simple command-line tool to run executables that require elevated

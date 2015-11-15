@@ -1,6 +1,21 @@
 
 language: cpp
 
+env:
+  global:
+   # The next declaration is the encrypted COVERITY_SCAN_TOKEN, created
+   #   via the "travis encrypt" command using the project repo's public key
+   - secure: "rJyMYSWpKiaco2wLm/eKpRfyaCkWcf1moE4vcSUnckyLP5ORnJS37MSUBsU26b7LXIqkOIb2BwJCn8s1vMUldk3eZub1rZPLVSh4GXIOHsJJ84wDpqBIgu+xsk8NXqXArTi9kbSAAVGlkslrl5pZ77bcLLQ2Nu8oPlXGpKzjEfHXpgZzZLJ4Xv7Vo3cOzKYDBn14oYcKxTsN5Tzny7GLJQpfXE1eRodcTFEL8g0JkA88cIBmaPLyLq9tlzazF8WHG+A3WOz0sikhgIAue59TBLm/sy3hmzjr9185ln+UxRnKTJDagRkBcnp0Wk//t3sxKySBAgPueftOqB5xAvr9U3qs9sfi1cBgJoCACFVh5ghZK00LqgrtxA+XWeisw9NHt4nBQ1FKw3zVg737HfCHuK+wVuC9pnSXWFVXh1aCgNLO69rL+dn0h5hD7LrVpwoc7OaKK6/xlTV4zZ2Xe0pK0HfQBh2CqaVSK9gIuHJIbS9P4E4LtbOCNi259C+3AXfB8+XfixsCVYFE+CMRFE4vaiRFl8FiwhBng5BBMrWPV8lS9nJ0KBq8D0SkbyKnivmRv6hmQ3UYa4PskkMm3jzl0eyLNsslGOEeTOum9l1yhM8WwiZFzJP1QqhxYl/NKuGRpRvPa+88f3/buZyXigFkRAT4/6daYgInCPFJKcS3ERA="
+
+addons:
+  coverity_scan:
+    project:
+      name: "itchio/elevate"
+      description: "<Your project description here>"
+    notification_email: fasterthanlime@gmail.com
+    build_command: "make"
+    branch_pattern: coverity_scan
+
 matrix:
   allow_failures:
    - os: linux
@@ -46,7 +61,7 @@ deploy:
     skip_cleanup: true
     on:
       tags: true
-      repo: itchio/butler
+      repo: itchio/https://scan.coverity.com/projects/itchio-elevate
   - provider: s3
     access_key_id: AKIAJC6IFO2T5RCEHRGA
     secret_access_key:
@@ -58,4 +73,4 @@ deploy:
     skip_cleanup: true
     on:
       tags: true
-      repo: itchio/butler
+      repo: itchio/elevate

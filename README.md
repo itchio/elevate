@@ -2,7 +2,7 @@
 # elevate
 
 [![Build Status](https://travis-ci.org/itchio/elevate.svg)](https://travis-ci.org/itchio/elevate)
-[![Coverity Scan Build Status](https://scan.coverity.com/projects/7034/badge.svg)](https://scan.coverity.com/projects/itchio-elevate)
+[![gratuitious badge](https://img.shields.io/badge/cppcheck-vigilant-ff69b4.svg)](https://github.com/itchio/elevate/blob/master/.travis.yml)
 
 Simple command-line tool to run executables that require elevated
 privileges on Windows

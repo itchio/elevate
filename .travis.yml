@@ -6,15 +6,6 @@ env:
    # COVERITY_SCAN_TOKEN
    - secure: "rJyMYSWpKiaco2wLm/eKpRfyaCkWcf1moE4vcSUnckyLP5ORnJS37MSUBsU26b7LXIqkOIb2BwJCn8s1vMUldk3eZub1rZPLVSh4GXIOHsJJ84wDpqBIgu+xsk8NXqXArTi9kbSAAVGlkslrl5pZ77bcLLQ2Nu8oPlXGpKzjEfHXpgZzZLJ4Xv7Vo3cOzKYDBn14oYcKxTsN5Tzny7GLJQpfXE1eRodcTFEL8g0JkA88cIBmaPLyLq9tlzazF8WHG+A3WOz0sikhgIAue59TBLm/sy3hmzjr9185ln+UxRnKTJDagRkBcnp0Wk//t3sxKySBAgPueftOqB5xAvr9U3qs9sfi1cBgJoCACFVh5ghZK00LqgrtxA+XWeisw9NHt4nBQ1FKw3zVg737HfCHuK+wVuC9pnSXWFVXh1aCgNLO69rL+dn0h5hD7LrVpwoc7OaKK6/xlTV4zZ2Xe0pK0HfQBh2CqaVSK9gIuHJIbS9P4E4LtbOCNi259C+3AXfB8+XfixsCVYFE+CMRFE4vaiRFl8FiwhBng5BBMrWPV8lS9nJ0KBq8D0SkbyKnivmRv6hmQ3UYa4PskkMm3jzl0eyLNsslGOEeTOum9l1yhM8WwiZFzJP1QqhxYl/NKuGRpRvPa+88f3/buZyXigFkRAT4/6daYgInCPFJKcS3ERA="
 
-addons:
-  coverity_scan:
-    project:
-      name: "itchio/elevate"
-      description: "Command-line privilege elevation on Windows Vista and higher"
-    notification_email: fasterthanlime@gmail.com
-    build_command: "make"
-    branch_pattern: coverity_scan
-
 matrix:
   include:
    - os: linux
@@ -26,6 +17,13 @@ matrix:
            - gcc-mingw-w64-i686
            - g++-mingw-w64-i686
            - binutils-mingw-w64-i686
+         coverity_scan:
+           project:
+             name: "itchio/elevate"
+             description: "Build submitted via Travis CI"
+           notification_email: fasterthanlime@gmail.com
+           build_command: "make"
+           branch_pattern: coverity_scan
    - os: linux
      env: ELEVATE_OS=windows ELEVATE_ARCH=amd64 TRIPLET=x86_64-w64-mingw32
      addons:
@@ -35,6 +33,13 @@ matrix:
            - gcc-mingw-w64-x86-64
            - g++-mingw-w64-x86-64
            - binutils-mingw-w64-x86-64
+         coverity_scan:
+           project:
+             name: "itchio/elevate"
+             description: "Build submitted via Travis CI"
+           notification_email: fasterthanlime@gmail.com
+           build_command: "make"
+           branch_pattern: coverity_scan
 script:
   - if [[ -n $TRAVIS_TAG ]]; then export ELEVATE_CFLAGS="-DELEVATE_VERSION=\\\"$TRAVIS_TAG\\\""; fi
   - make

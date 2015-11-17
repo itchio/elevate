@@ -1,6 +1,7 @@
 
 # elevate
 
+![MIT licensed](https://img.shields.io/badge/license-MIT-blue.svg)
 [![Build Status](https://travis-ci.org/itchio/elevate.svg)](https://travis-ci.org/itchio/elevate)
 [![gratuitious badge](https://img.shields.io/badge/cppcheck-vigilant-ff69b4.svg)](https://github.com/itchio/elevate/blob/master/.travis.yml)
 

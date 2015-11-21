@@ -30,6 +30,7 @@ script:
   - file elevate.exe || true
 before_deploy:
   - rvm install 2.1.5
+  - rvm use 2.1.5
   - mkdir -p build
   - cp elevate.exe build/
   - mkdir -p dist

@@ -38,8 +38,8 @@ int main(int argc, char** argv) {
     bail(1, "Usage: elevate PROGRAM ARGS");
   }
 
-  if (strcmp("-v", argv[1]) == 0) {
-    printf("elevate version %s\n", ELEVATE_VERSION);
+  if (strcmp("-V", argv[1]) == 0) {
+    printf("%s\n", ELEVATE_VERSION);
     return 0;
   }
 

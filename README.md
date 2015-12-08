@@ -6,7 +6,7 @@
 [![cppcheck badge](https://img.shields.io/badge/cppcheck-vigilant-ff69b4.svg)](https://github.com/itchio/elevate/blob/master/.travis.yml)
 
 Simple command-line tool to run executables that require elevated
-privileges on Windows
+privileges on Windows.
 
 Think [node-runas][] but as a standalone tool, or [jpassing/elevate][]
 but that compiles on MinGW and is continuously getting built on Travis CI.

@@ -9,7 +9,7 @@ Simple command-line tool to run executables that require elevated
 privileges on Windows.
 
 Think [node-runas][] but as a standalone tool, or [jpassing/elevate][]
-but that compiles on MinGW and is continuously getting built on Travis CI
+but that compiles on MinGW and is continuously getting built on Travis CI.
 
 [node-runas]: https://github.com/atom/node-runas
 [jpassing/elevate]: https://github.com/jpassing/elevate

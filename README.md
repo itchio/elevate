@@ -15,7 +15,7 @@ but that compiles on MinGW and is continuously getting built on Travis CI
 [jpassing/elevate]: https://github.com/jpassing/elevate
 
 Used by [the itch.io desktop client][] to run some installers on
-Windows.
+Windows
 
 [the itch.io desktop client]: https://github.com/itchio/itchio-app
 

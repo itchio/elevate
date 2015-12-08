@@ -21,4 +21,4 @@ Windows
 
 ### License
 
-elevate is released under the MIT license, see LICENSE.md for details.
+elevate is released under the MIT license, see LICENSE.md for details

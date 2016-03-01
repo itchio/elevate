@@ -1,5 +1,11 @@
 #!/bin/sh -xe
 
+if [ "$CI_ARCH" = "amd64" ]; then
+  export PATH=/mingw64/bin:$PATH
+else
+  export PATH=/mingw32/bin:$PATH
+fi
+
 7za | head -2
 gcc -v
 cppcheck --error-exitcode=1 src
@@ -9,13 +15,6 @@ if [ -n "$CI_BUILD_TAG" ]; then
   export ELEVATE_VERSIOn=$CI_BUILD_TAG
 fi
 export ELEVATE_CFLAGS="-DELEVATE_VERSION=\\\"$ELEVATE_VERSION\\\""
-
-
-if [ "$CI_ARCH" = "amd64" ]; then
-  export PATH=/mingw64/bin:$PATH
-else
-  export PATH=/mingw32/bin:$PATH
-fi
 
 make
 file elevate.exe

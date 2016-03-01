@@ -1,0 +1,19 @@
+
+stages:
+  - test
+
+test:windows:386:
+  stage: test
+  tags:
+    - windows
+  script:
+    - export CI_ARCH=386
+    - scripts/ci.sh
+
+test:windows:amd64:
+  stage: test
+  tags:
+    - windows
+  script:
+    - export CI_ARCH=amd64
+    - scripts/ci.sh

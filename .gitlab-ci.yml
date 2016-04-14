@@ -1,6 +1,8 @@
 
 stages:
   - test
+  - build
+  - deploy
 
 test:windows:386:
   stage: test
@@ -8,7 +10,7 @@ test:windows:386:
     - windows
   script:
     - export CI_ARCH=386
-    - scripts/ci.sh
+    - scripts/ci-test.sh
 
 test:windows:amd64:
   stage: test
@@ -16,4 +18,36 @@ test:windows:amd64:
     - windows
   script:
     - export CI_ARCH=amd64
-    - scripts/ci.sh
+    - scripts/ci-test.sh
+
+build:windows:386:
+  stage: build
+  tags:
+    - windows
+  script:
+    - export CI_ARCH=386
+    - scripts/ci-build.sh
+
+build:windows:amd64:
+  stage: build
+  tags:
+    - windows
+  script:
+    - export CI_ARCH=amd64
+    - scripts/ci-build.sh
+  artifacts:
+    paths:
+      - binaries
+
+deploy:
+  stage: deploy
+  tags:
+    - dropsy
+  script:
+    - scripts/ci-deploy.sh
+  dependencies:
+    - :build:windows:386
+    - :build:windows:amd64
+  artifacts:
+    paths:
+      - binaries

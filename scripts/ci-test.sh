@@ -18,9 +18,3 @@ export ELEVATE_CFLAGS="-DELEVATE_VERSION=\\\"$ELEVATE_VERSION\\\""
 
 make
 file elevate.exe
-
-if [ -n "$CI_BUILD_TAG" ]; then
-  7za a elevate.7z elevate.exe
-  echo $CI_BUILD_TAG > LATEST
-fi
-

@@ -19,6 +19,8 @@ export ELEVATE_CFLAGS="-DELEVATE_VERSION=\\\"$ELEVATE_VERSION\\\""
 make
 file elevate.exe
 
+export CI_OS="windows"
+
 # sign (win)
 if [ "$CI_OS" = "windows" ]; then
   WIN_SIGN_KEY="Open Source Developer, Amos Wenger"

@@ -114,10 +114,17 @@ int msiexec(int argc, char** argv) {
   SAFE_APPEND("%s%s ", "/l*v");
   SAFE_APPEND("%s%s ", logPath);
 
+  char *verb = "open";
   if (strcmp(command, "--install") == 0) {
     SAFE_APPEND("%s%s ", "/i");
   } else if (strcmp(command, "--uninstall") == 0) {
     SAFE_APPEND("%s%s ", "/x");
+  } else if (strcmp(command, "--elevated-install") == 0) {
+    SAFE_APPEND("%s%s ", "/i");
+    verb = "runas";
+  } else if (strcmp(command, "--elevated-uninstall") == 0) {
+    SAFE_APPEND("%s%s ", "/x");
+    verb = "runas";
   } else {
     fprintf(stderr, "Command must be --install or --uninstall, got %s\n", command);
     msibail();
@@ -125,7 +132,7 @@ int msiexec(int argc, char** argv) {
 
   SAFE_APPEND("%s%s ", msiPath);
 
-  return exec("open", "msiexec", parameters);
+  return exec(verb, "msiexec", parameters);
 }
 
 /**

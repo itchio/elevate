@@ -2,6 +2,7 @@
 # elevate
 
 ![MIT licensed](https://img.shields.io/badge/license-MIT-blue.svg)
+[![Build Status](https://git.itch.ovh/itchio/elevate/badges/master/build.svg)](https://git.itch.ovh/itchio/elevate/builds)
 [![cppcheck badge](https://img.shields.io/badge/cppcheck-vigilant-ff69b4.svg)](https://github.com/itchio/elevate/blob/master/.travis.yml)
 
 Simple command-line tool to run executables that require elevated

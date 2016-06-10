@@ -206,7 +206,6 @@ int runas(int argc, char** argv) {
   if (!LogonUserW(wuser, L".", wpassword, LOGON32_LOGON_INTERACTIVE, LOGON32_PROVIDER_DEFAULT, &hToken)) {
     wbail(127, "LogonUser");
   }
-  fprintf(stderr, "hToken = %p\n", hToken);
 
   if (!CreateEnvironmentBlock(&lpvEnv, hToken, TRUE)) {
     wbail(127, "CreateEnvironmentBlock");

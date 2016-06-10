@@ -1,6 +1,7 @@
 
 #include <stdio.h>
 #include <windows.h>
+#include <userenv.h>
 
 #ifndef SEE_MASK_NOASYNC
 #define SEE_MASK_NOASYNC 0x00000100
@@ -20,6 +21,25 @@
 #define VISTA_MAJOR_VERSION 6
 
 static void bail(int code, char *msg) {
+  fprintf(stderr, "%s\n", msg);
+  exit(code);
+}
+
+static void wbail(int code, char *msg) {
+  LPVOID lpvMessageBuffer;
+
+  FormatMessageW(FORMAT_MESSAGE_ALLOCATE_BUFFER | 
+    FORMAT_MESSAGE_FROM_SYSTEM,
+    NULL, GetLastError(), 
+    MAKELANGID(LANG_NEUTRAL, SUBLANG_DEFAULT), 
+    (LPWSTR)&lpvMessageBuffer, 0, NULL);
+
+  wprintf(L"API = %s.\n", msg);
+  wprintf(L"error code = %d.\n", GetLastError());
+  wprintf(L"message    = %s.\n", (LPWSTR)lpvMessageBuffer);
+
+  LocalFree(lpvMessageBuffer);
+
   fprintf(stderr, "%s\n", msg);
   exit(code);
 }
@@ -135,6 +155,95 @@ int msiexec(int argc, char** argv) {
   return exec(verb, "msiexec", parameters);
 }
 
+void toWideChar (const char *s, wchar_t **ws) {
+  int wchars_num = MultiByteToWideChar(CP_UTF8, 0, s, -1, NULL, 0);
+  *ws = malloc(wchars_num * sizeof(wchar_t));
+  MultiByteToWideChar(CP_UTF8, 0, s, -1, *ws, wchars_num);
+}
+
+int runas(int argc, char** argv) {
+  const int MAX_ARGUMENTS_LENGTH = 65536;
+  char parameters[MAX_ARGUMENTS_LENGTH];
+  char tmp[MAX_ARGUMENTS_LENGTH];
+
+  parameters[0] = '\0';
+
+  if (argc < 5) {
+    fprintf(stderr, "Not enough arguments, expected 6, got %d\n", argc);
+    msibail();
+  }
+
+  const char* user = argv[2];
+  const char* password = argv[3];
+  const char* command = argv[4];
+
+  for (int i = 4; i < argc; i++) {
+    SAFE_APPEND("%s\"%s\" ", argv[i]);
+  }
+
+  WCHAR* wuser;
+  WCHAR* wpassword;
+  WCHAR* wcommand;
+  WCHAR* wparameters;
+  toWideChar(user, &wuser);
+  toWideChar(password, &wpassword);
+  toWideChar(command, &wcommand);
+  toWideChar(parameters, &wparameters);
+
+  HANDLE hToken;
+  LPVOID lpvEnv;
+
+  WCHAR szUserProfile[256];
+  ZeroMemory(szUserProfile, sizeof(szUserProfile));
+
+  PROCESS_INFORMATION pi;
+  ZeroMemory(&pi, sizeof(PROCESS_INFORMATION));
+
+  STARTUPINFOW si;
+  ZeroMemory(&si, sizeof(STARTUPINFOW));
+  si.cb = sizeof(STARTUPINFOW);
+
+  if (!LogonUserW(wuser, L".", wpassword, LOGON32_LOGON_INTERACTIVE, LOGON32_PROVIDER_DEFAULT, &hToken)) {
+    wbail(127, "LogonUser");
+  }
+  fprintf(stderr, "hToken = %p\n", hToken);
+
+  if (!CreateEnvironmentBlock(&lpvEnv, hToken, TRUE)) {
+    wbail(127, "CreateEnvironmentBlock");
+  }
+
+  DWORD dwSize = sizeof(szUserProfile) / sizeof(WCHAR);
+
+  if (!GetUserProfileDirectoryW(hToken, szUserProfile, &dwSize)) {
+    wbail(127, "GetUserProfileDirectory");
+  }
+
+  if (!CreateProcessWithLogonW(wuser, L".", wpassword,
+    LOGON_WITH_PROFILE, wcommand, wparameters,
+    CREATE_UNICODE_ENVIRONMENT, lpvEnv, szUserProfile,
+    &si, &pi)) {
+    wbail(127, "CreateProcessWithLogonW");
+  }
+
+  WaitForSingleObject(pi.hProcess, INFINITE);
+
+  DWORD code;
+  if (GetExitCodeProcess(pi.hProcess, &code) == 0) {
+    // Not sure when this could ever happen.
+    wbail(127, "failed GetExitCodeProcess call");
+  }
+
+  if (!DestroyEnvironmentBlock(lpvEnv)) {
+    wbail(127, "failed DestroyEnvironmentBlock call");
+  }
+
+  CloseHandle(hToken);
+  CloseHandle(pi.hProcess);
+  CloseHandle(pi.hThread);
+
+  return code;
+}
+
 /**
  * Inspired by / with some code from the following MIT-licensed projects:
  *   - https://github.com/atom/node-runas
@@ -156,6 +265,8 @@ int main(int argc, char** argv) {
 
   if (strcmp("--msiexec", argv[1]) == 0) {
     return msiexec(argc, argv);
+  } else if (strcmp("--runas", argv[1]) == 0) {
+    return runas(argc, argv);
   } else {
     return elevate(argc, argv);
   }

@@ -1,5 +1,6 @@
 
 CFLAGS:=-std=gnu99 -Wall -Os
+LDFLAGS:=-luserenv
 GCC:=gcc
 STRIP:=strip
 
@@ -11,5 +12,5 @@ STRIP:=${TRIPLET}-${STRIP}
 endif
 
 all:
-	${GCC} ${CFLAGS} ${ELEVATE_CFLAGS} -static src/elevate.c -o elevate.exe
+	${GCC} ${CFLAGS} ${ELEVATE_CFLAGS} -static src/elevate.c -o elevate.exe ${LDFLAGS}
 	${STRIP} elevate.exe

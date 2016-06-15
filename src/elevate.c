@@ -34,7 +34,7 @@ static void wbail(int code, char *msg) {
     MAKELANGID(LANG_NEUTRAL, SUBLANG_DEFAULT), 
     (LPWSTR)&lpvMessageBuffer, 0, NULL);
 
-  wprintf(L"API = %s.\n", msg);
+  printf("API = %s.\n", msg);
   wprintf(L"error code = %d.\n", GetLastError());
   wprintf(L"message    = %s.\n", (LPWSTR)lpvMessageBuffer);
 
@@ -193,9 +193,6 @@ int runas(int argc, char** argv) {
   HANDLE hToken;
   LPVOID lpvEnv;
 
-  WCHAR szUserProfile[256];
-  ZeroMemory(szUserProfile, sizeof(szUserProfile));
-
   PROCESS_INFORMATION pi;
   ZeroMemory(&pi, sizeof(PROCESS_INFORMATION));
 
@@ -211,15 +208,9 @@ int runas(int argc, char** argv) {
     wbail(127, "CreateEnvironmentBlock");
   }
 
-  DWORD dwSize = sizeof(szUserProfile) / sizeof(WCHAR);
-
-  if (!GetUserProfileDirectoryW(hToken, szUserProfile, &dwSize)) {
-    wbail(127, "GetUserProfileDirectory");
-  }
-
   if (!CreateProcessWithLogonW(wuser, L".", wpassword,
     LOGON_WITH_PROFILE, wcommand, wparameters,
-    CREATE_UNICODE_ENVIRONMENT, lpvEnv, szUserProfile,
+    CREATE_UNICODE_ENVIRONMENT, lpvEnv, NULL,
     &si, &pi)) {
     wbail(127, "CreateProcessWithLogonW");
   }

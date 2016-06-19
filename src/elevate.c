@@ -208,9 +208,20 @@ int runas(int argc, char** argv) {
     wbail(127, "CreateEnvironmentBlock");
   }
 
+  wchar_t *ExePath;
+  toWideChar(argv[4], &ExePath);
+
+  wchar_t *DirPath = malloc(sizeof(wchar_t) * MAX_PATH);
+  DirPath[0] = (wchar_t) '\0';
+  _wsplitpath(ExePath, NULL, DirPath, NULL, NULL);
+
+  if (wcslen(DirPath) == 0) {
+    GetCurrentDirectoryW(MAX_PATH, DirPath);
+  }
+
   if (!CreateProcessWithLogonW(wuser, L".", wpassword,
     LOGON_WITH_PROFILE, wcommand, wparameters,
-    CREATE_UNICODE_ENVIRONMENT, lpvEnv, NULL,
+    CREATE_UNICODE_ENVIRONMENT, lpvEnv, DirPath,
     &si, &pi)) {
     wbail(127, "CreateProcessWithLogonW");
   }

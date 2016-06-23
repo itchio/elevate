@@ -192,7 +192,6 @@ int runas(int argc, char** argv) {
   toWideChar(parameters, &wparameters);
 
   HANDLE hToken;
-  LPVOID lpvEnv;
 
   PROCESS_INFORMATION pi;
   ZeroMemory(&pi, sizeof(PROCESS_INFORMATION));
@@ -205,9 +204,9 @@ int runas(int argc, char** argv) {
     wbail(127, "LogonUser");
   }
 
-  if (!CreateEnvironmentBlock(&lpvEnv, hToken, TRUE)) {
-    wbail(127, "CreateEnvironmentBlock");
-  }
+  // don't have enough permissions to NetUserGetInfo
+  // C:\Users is a constant even on non-English windows
+  SetEnvironmentVariableW(L"USERPROFILE", L"C:\\Users\\itch-player");
 
   wchar_t *ExePath;
   toWideChar(argv[4], &ExePath);
@@ -240,7 +239,9 @@ int runas(int argc, char** argv) {
 
   if (!CreateProcessWithLogonW(wuser, L".", wpassword,
     LOGON_WITH_PROFILE, wcommand, wparameters,
-    CREATE_UNICODE_ENVIRONMENT, lpvEnv, DirPath,
+    0,
+    NULL, // inherit parent environment
+    DirPath,
     &si, &pi)) {
     wbail(127, "CreateProcessWithLogonW");
   }
@@ -251,10 +252,6 @@ int runas(int argc, char** argv) {
   if (GetExitCodeProcess(pi.hProcess, &code) == 0) {
     // Not sure when this could ever happen.
     wbail(127, "failed GetExitCodeProcess call");
-  }
-
-  if (!DestroyEnvironmentBlock(lpvEnv)) {
-    wbail(127, "failed DestroyEnvironmentBlock call");
   }
 
   CloseHandle(hToken);

@@ -1,6 +1,7 @@
 
 #include <stdio.h>
 #include <windows.h>
+#include <sddl.h>
 #include <userenv.h>
 
 #ifndef SEE_MASK_NOASYNC
@@ -263,6 +264,36 @@ int runas(int argc, char** argv) {
   return code;
 }
 
+int printUsersSid () {
+  DWORD arbitrarySize = 2048;
+
+  DWORD sidSize = arbitrarySize;
+  PSID sid = malloc(sidSize);
+  memset(sid, 0, sidSize);
+
+  int ret = CreateWellKnownSid(WinBuiltinUsersSid, NULL, sid, &sidSize);
+  if (!ret) {
+    wbail(127, "failed CreateWellKnownSid call");
+  }
+
+  DWORD cchName = arbitrarySize;
+  wchar_t *lpName = malloc(sizeof(wchar_t) * cchName);
+
+  DWORD cchReferencedDomainName = arbitrarySize;
+  wchar_t *lpReferencedDomainName = malloc(sizeof(wchar_t) * cchReferencedDomainName);
+
+  SID_NAME_USE sidUse;
+
+  ret = LookupAccountSidW(NULL, sid, lpName, &cchName, lpReferencedDomainName, &cchReferencedDomainName, &sidUse);
+  if (!ret) {
+    wbail(127, "failed LookupAccountSid call");
+  }
+
+  wprintf(L"%s\n", lpName);
+
+  return 0;
+}
+
 /**
  * Inspired by / with some code from the following MIT-licensed projects:
  *   - https://github.com/atom/node-runas
@@ -286,6 +317,8 @@ int main(int argc, char** argv) {
     return msiexec(argc, argv);
   } else if (strcmp("--runas", argv[1]) == 0) {
     return runas(argc, argv);
+  } else if (strcmp("--print-users-sid", argv[1]) == 0) {
+    return printUsersSid(argc, argv);
   } else {
     return elevate(argc, argv);
   }

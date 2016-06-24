@@ -295,6 +295,7 @@ int runas(int argc, char** argv) {
 
   memcpy(currentManipEnvSz, shBuf, sizeof(wchar_t) * (wcslen(shBuf)));
   currentManipEnvSz += sizeof(wchar_t) * (wcslen(shBuf));
+  free(shBuf);
 
   memcpy(currentManipEnvSz, terminator, sizeof(wchar_t));
   currentManipEnvSz += sizeof(wchar_t) * 1;

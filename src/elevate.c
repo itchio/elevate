@@ -3,6 +3,7 @@
 #include <windows.h>
 #include <sddl.h>
 #include <userenv.h>
+#include <shlobj.h>
 
 #ifndef SEE_MASK_NOASYNC
 #define SEE_MASK_NOASYNC 0x00000100
@@ -44,6 +45,26 @@ static void wbail(int code, char *msg) {
   fprintf(stderr, "%s\n", msg);
   exit(code);
 }
+
+static void ebail(int code, char *msg, HRESULT err) {
+  LPVOID lpvMessageBuffer;
+
+  FormatMessageW(FORMAT_MESSAGE_ALLOCATE_BUFFER | 
+    FORMAT_MESSAGE_FROM_SYSTEM,
+    NULL, err, 
+    MAKELANGID(LANG_NEUTRAL, SUBLANG_DEFAULT), 
+    (LPWSTR)&lpvMessageBuffer, 0, NULL);
+
+  printf("API = %s.\n", msg);
+  wprintf(L"error code = %d.\n", err);
+  wprintf(L"message    = %s.\n", (LPWSTR)lpvMessageBuffer);
+
+  LocalFree(lpvMessageBuffer);
+
+  fprintf(stderr, "%s\n", msg);
+  exit(code);
+}
+
 
 static int getMajorOSVersion() {
   OSVERSIONINFO ovi;
@@ -201,12 +222,105 @@ int runas(int argc, char** argv) {
   ZeroMemory(&si, sizeof(STARTUPINFOW));
   si.cb = sizeof(STARTUPINFOW);
 
-  if (!LogonUserW(wuser, L".", wpassword, LOGON32_LOGON_INTERACTIVE, LOGON32_PROVIDER_DEFAULT, &hToken)) {
+  if (!LogonUserW(wuser, L".", wpassword,
+	LOGON32_LOGON_INTERACTIVE,
+	LOGON32_PROVIDER_DEFAULT,
+	&hToken)) {
     wbail(127, "LogonUser");
   }
 
   if (!CreateEnvironmentBlock(&lpvEnv, hToken, TRUE)) {
+    CloseHandle(hToken);
     wbail(127, "CreateEnvironmentBlock");
+  }
+
+  PROFILEINFOW profileInfo;
+  ZeroMemory(&profileInfo, sizeof(profileInfo));
+  profileInfo.dwSize = sizeof(profileInfo);
+  profileInfo.lpUserName = L"itch-player";
+
+  DWORD shBufSize = 2048;
+  wchar_t *shBuf = malloc(sizeof(wchar_t) * shBufSize);
+
+  if (!ImpersonateLoggedOnUser(hToken)) {
+    CloseHandle(hToken);
+    wbail(127, "ImpersonateLoggedOnUser");
+  }
+
+  HRESULT shRes = SHGetFolderPathW(NULL, CSIDL_PROFILE | CSIDL_FLAG_CREATE, NULL, SHGFP_TYPE_CURRENT, shBuf);
+  if (FAILED(shRes)) {
+    CloseHandle(hToken);
+    ebail(127, "SHGetFolderPathW (1)", shRes);
+  }
+  wprintf(L"User profile dir = %s\n", shBuf);
+
+  if (!RevertToSelf()) {
+    CloseHandle(hToken);
+    wbail(127, "ImpersonateLoggedOnUser");
+  }
+
+  CloseHandle(hToken);
+ 
+  DWORD envLen;
+  wchar_t *ptr = lpvEnv;
+  while (1) {
+#ifdef DEBUG
+    printf(L"[ENV] %s\n", ptr);
+#endif
+    while ((*ptr) != '\0') {
+      ptr++;
+    }
+    ptr++;
+
+    if (*ptr == '\0') {
+      envLen = (DWORD) ((LPVOID) ptr - (LPVOID) lpvEnv);
+      wprintf(L"Total environment length: %d\n", envLen);
+      break;
+    }
+  }
+
+  wchar_t *envAddition = L"USERPROFILE=";
+  wchar_t *terminator = L"\0";
+
+  DWORD envBufSize = envLen + (sizeof(wchar_t) * (wcslen(envAddition) + wcslen(shBuf) + 1));
+  wprintf(L"Environment buffer size: %d\n", envBufSize);
+
+  LPVOID lpvManipEnv = malloc(sizeof(wchar_t) * envBufSize); 
+  ZeroMemory(lpvManipEnv, sizeof(wchar_t) * envBufSize);
+
+  BYTE *currentManipEnvSz = lpvManipEnv;
+
+  memcpy(currentManipEnvSz, envAddition, sizeof(wchar_t) * (wcslen(envAddition)));
+  currentManipEnvSz += sizeof(wchar_t) * (wcslen(envAddition));
+
+  memcpy(currentManipEnvSz, shBuf, sizeof(wchar_t) * (wcslen(shBuf)));
+  currentManipEnvSz += sizeof(wchar_t) * (wcslen(shBuf));
+
+  memcpy(currentManipEnvSz, terminator, sizeof(wchar_t));
+  currentManipEnvSz += sizeof(wchar_t) * 1;
+
+  memcpy(currentManipEnvSz, lpvEnv, envLen);
+  currentManipEnvSz += envLen;
+
+  if (!DestroyEnvironmentBlock(lpvEnv)) {
+    wbail(127, "failed DestroyEnvironmentBlock call");
+  }
+
+  memcpy(currentManipEnvSz, terminator, sizeof(wchar_t));
+
+  ptr = lpvManipEnv;
+  while (1) {
+#ifdef DEBUG
+    wprintf(L"[MENV] %s\n", ptr);
+#endif
+    while ((*ptr) != '\0') {
+      ptr++;
+    }
+    ptr++;
+
+    if (*ptr == '\0') {
+      break;
+    }
   }
 
   wchar_t *ExePath;
@@ -240,7 +354,9 @@ int runas(int argc, char** argv) {
 
   if (!CreateProcessWithLogonW(wuser, L".", wpassword,
     LOGON_WITH_PROFILE, wcommand, wparameters,
-    CREATE_UNICODE_ENVIRONMENT, lpvEnv, DirPath,
+    CREATE_UNICODE_ENVIRONMENT,
+    lpvManipEnv,
+    DirPath,
     &si, &pi)) {
     wbail(127, "CreateProcessWithLogonW");
   }
@@ -253,11 +369,6 @@ int runas(int argc, char** argv) {
     wbail(127, "failed GetExitCodeProcess call");
   }
 
-  if (!DestroyEnvironmentBlock(lpvEnv)) {
-    wbail(127, "failed DestroyEnvironmentBlock call");
-  }
-
-  CloseHandle(hToken);
   CloseHandle(pi.hProcess);
   CloseHandle(pi.hThread);
 
@@ -300,6 +411,8 @@ int printUsersSid () {
  *   - https://github.com/jpassing/elevate
  */
 int main(int argc, char** argv) {
+  setvbuf(stdout, NULL, _IONBF, BUFSIZ);
+
   if (getMajorOSVersion() < VISTA_MAJOR_VERSION) {
     bail(1, "elevate requires Windows Vista or above");
   }

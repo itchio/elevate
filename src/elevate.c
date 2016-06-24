@@ -249,8 +249,41 @@ int runas(int argc, char** argv) {
 
   HRESULT shRes = SHGetFolderPathW(NULL, CSIDL_PROFILE | CSIDL_FLAG_CREATE, NULL, SHGFP_TYPE_CURRENT, shBuf);
   if (FAILED(shRes)) {
-    CloseHandle(hToken);
-    ebail(127, "SHGetFolderPathW (1)", shRes);
+    wprintf(L"SHGetFolderPath failed: error %d\n", shRes);
+
+    if (!RevertToSelf()) {
+      CloseHandle(hToken);
+      wbail(127, "ImpersonateLoggedOnUser");
+    }
+
+
+    wchar_t *cmdLine = wcsdup(L"cmd.exe /c whoami");
+    if (!CreateProcessWithLogonW(wuser, L".", wpassword,
+      LOGON_WITH_PROFILE, L"cmd.exe", cmdLine,
+      CREATE_UNICODE_ENVIRONMENT,
+      lpvEnv,
+      NULL,
+      &si, &pi)) {
+      wbail(127, "CreateProcessWithLogonW");
+    }
+    free(cmdLine);
+  
+    WaitForSingleObject(pi.hProcess, INFINITE);
+  
+    CloseHandle(pi.hProcess);
+    CloseHandle(pi.hThread);
+
+    if (!ImpersonateLoggedOnUser(hToken)) {
+      CloseHandle(hToken);
+      wbail(127, "ImpersonateLoggedOnUser");
+    }
+
+    shRes = SHGetFolderPathW(NULL, CSIDL_PROFILE | CSIDL_FLAG_CREATE, NULL, SHGFP_TYPE_CURRENT, shBuf);
+    if (FAILED(shRes)) {
+      CloseHandle(hToken);
+      ebail(127, "SHGetFolderPathW (1)", shRes);
+    }
+
   }
   wprintf(L"User profile dir = %s\n", shBuf);
 

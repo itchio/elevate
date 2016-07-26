@@ -49,7 +49,7 @@ mkdir -p $BINARIES_DIR/$CI_VERSION
 mv elevate.7z $BINARIES_DIR/$CI_VERSION
 mv elevate.exe $BINARIES_DIR/$CI_VERSION
 
-(cd $BINARIES_DIR/$CI_VERSION && sha1sum * > SHA1SUMS)
+(cd $BINARIES_DIR/$CI_VERSION && sha1sum * > SHA1SUMS && sha256sum * > SHA256SUMS)
 
 if [ -n "$CI_BUILD_TAG" ]; then
   echo $CI_BUILD_TAG > $BINARIES_DIR/LATEST

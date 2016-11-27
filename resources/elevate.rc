@@ -1,0 +1,26 @@
+id ICON "elevate.ico"
+
+1 VERSIONINFO
+FILEVERSION     1,0,0,0
+PRODUCTVERSION  1,0,0,0
+BEGIN
+  BLOCK "StringFileInfo"
+  BEGIN
+    BLOCK "080904E4"
+    BEGIN
+      VALUE "CompanyName", "itch corp."
+      VALUE "FileDescription", "Administrative helper for itch"
+      VALUE "FileVersion", "1.0"
+      VALUE "InternalName", "elevate"
+      VALUE "LegalCopyright", "itch corp."
+      VALUE "OriginalFilename", "elevate.exe"
+      VALUE "ProductName", "elevate"
+      VALUE "ProductVersion", "1.0"
+    END
+  END
+
+  BLOCK "VarFileInfo"
+  BEGIN
+    VALUE "Translation", 0x809, 1252
+  END
+END
